@@ -1,0 +1,50 @@
+#
+# inspired in: https://github.com/n3wt0n/CompositeAction
+#
+name: 'Publish to Docker.io'
+description: 'Build a container image and Pushes it to Docker registry'
+
+inputs:
+  # registry_username:
+  #   description: 'Username for image registry'
+  #   required: true
+  # registry_password:
+  #   description: 'Password for image registry'
+  #   required: true
+  image_name:
+    description: 'Name of the image to push'
+    required: true
+  # tag:
+  #   description: 'How to tag the image. Default: latest'
+
+runs:
+  using: 'composite'
+  steps:
+    # - name: Setup BuildX
+    #   uses: docker/setup-buildx-action@v1
+
+    - name: Login to the Registry
+      uses: docker/login-action@v2 #v1
+      with:
+        username: ${{secrets.REG_USER}}
+        password: ${{secrets.REG_PASSWD}}
+        # username: ${{inputs.registry_username}}
+        # password: ${{inputs.registry_password}}
+
+    # - name: Set the tag
+    #   shell: bash
+    #   run: |
+    #     if [ -z "${{inputs.tag}}" ]
+    #     then
+    #       echo "final_tag=latest" >> $GITHUB_ENV
+    #     else
+    #       echo "final_tag=${{inputs.tag}}" >> $GITHUB_ENV
+    #     fi
+
+    - name: Build and Push the Image
+      uses: docker/build-push-action@v4 #v2
+      with:
+        context: .
+        push: true
+        tags: gabtec/${{inputs.image_name}}:${{github.sha}}
+        # tags: ${{github.repository_owner}}/${{inputs.image_name}}:${{github.sha}}
